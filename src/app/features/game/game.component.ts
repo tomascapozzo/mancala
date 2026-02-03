@@ -16,6 +16,7 @@ import { FormsModule } from '@angular/forms';
 export class GameComponent implements OnInit {
 aiDepth: number = 4;
 
+
   constructor(
   public game: MancalaService,
   private route: ActivatedRoute

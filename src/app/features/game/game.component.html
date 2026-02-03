@@ -51,7 +51,7 @@
               <button
                 class="pit pit-b"
                 (click)="play(index)"
-                [disabled]="game.animating">
+                [disabled]="game.isAnimating">
                 <div class="stones">
                   <span
                     class="stone"
@@ -68,7 +68,7 @@
               <button
                 class="pit pit-a"
                 (click)="play(index)"
-                [disabled]="game.animating">
+                [disabled]="game.isAnimating">
                 <div class="stones">
                   <span
                     class="stone"

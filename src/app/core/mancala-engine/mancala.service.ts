@@ -6,10 +6,10 @@ import {
   isGameOver,
   getWinner,
   getBestMove,
-  pitName,
   isValidMove,
+  cloneBoard,
+  getDistributionPath,
 } from './mancala.logic';
-import { getRandomMove } from './ai';
 
 
 @Injectable({
@@ -27,8 +27,9 @@ export class MancalaService {
     pit: number;
     extraTurn: boolean;
   }[] = [];
-  animating = false;
+  isAnimating = false;
   animationDrops: number[] = [];
+
 
 
   constructor() {
@@ -61,6 +62,48 @@ export class MancalaService {
   }, 1500);
 }
 
+animateMove(
+  originalBoard: BoardState,
+  startPit: number,
+  path: number[]
+) {
+
+  this.isAnimating = true;
+
+  // Visual board copy
+  let tempBoard = cloneBoard(originalBoard);
+  tempBoard.pits[startPit] = 0;
+  this.board = tempBoard;
+
+  let i = 0;
+
+  const dropNext = () => {
+
+    if (i >= path.length) {
+
+      // 🔥 Apply rules using ORIGINAL board
+      this.board = applyMove(originalBoard, startPit);
+      this.isAnimating = false;
+
+      if (
+        this.mode === 'ai' &&
+        this.board.currentPlayer === this.AIPlayer
+      ) {
+        setTimeout(() => this.playAiTurn(), 400);
+      }
+
+      return;
+    }
+
+    const pit = path[i];
+    this.board.pits[pit]++;
+
+    i++;
+    setTimeout(dropNext, 120);
+  };
+
+  dropNext();
+}
 
 
   /** Returns current board */
@@ -70,34 +113,26 @@ export class MancalaService {
 
   /** Reset to initial state */
   reset(): void {
-    this.board = createInitialBoard();
-    this.moveHistory = [];
-  }
+  this.board = createInitialBoard();
+  this.moveHistory = [];
+}
 
   /** Play a pit index */
-  playMove(pitIndex: number): void {
-    if (isGameOver(this.board)) return;
+playMove(pitIndex: number): void {
 
-    const playerBefore = this.board.currentPlayer;
+  if (this.isAnimating) return;
+  if (isGameOver(this.board)) return;
+  if (!isValidMove(this.board, pitIndex)) return;
 
-    const result = applyMove(this.board, pitIndex);
+  const originalBoard = cloneBoard(this.board);
+  const path = getDistributionPath(originalBoard, pitIndex);
 
-    const extraTurn = result.currentPlayer === playerBefore;
+  this.animateMove(originalBoard, pitIndex, path);
+}
 
-    // Log move
-    this.moveHistory.push({
-      player: playerBefore,
-      pit: pitIndex,
-      extraTurn: extraTurn,
-    });
 
-    this.board = result;
 
-    // If AI turn, make AI move
-    if (this.mode === 'ai' && this.board.currentPlayer === this.AIPlayer) {
-      this.playAiTurn();
-    }
-  }
+
 
   isValidMove(i: number) {
     return isValidMove(this.board, i);
