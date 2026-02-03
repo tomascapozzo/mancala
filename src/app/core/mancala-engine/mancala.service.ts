@@ -27,6 +27,9 @@ export class MancalaService {
     pit: number;
     extraTurn: boolean;
   }[] = [];
+  animating = false;
+  animationDrops: number[] = [];
+
 
   constructor() {
     this.reset();

@@ -46,32 +46,38 @@
         <div class="pits">
           <!-- Player 1 side (top) -->
           <div class="row top-row">
-            <button
-              class="pit pit-b"
-              *ngFor="let index of [12,11,10,9,8,7]"
-              (click)="play(index)">
-              <div class="stones">
-                <span
-                  class="stone"
-                  *ngFor="let s of [].constructor(board.pits[index])">
-                </span>
-              </div>
-            </button>
+            <div class="pit-wrapper" *ngFor="let index of [12,11,10,9,8,7]">
+              <div class="stone-count stone-count-top">{{ board.pits[index] }}</div>
+              <button
+                class="pit pit-b"
+                (click)="play(index)"
+                [disabled]="game.animating">
+                <div class="stones">
+                  <span
+                    class="stone"
+                    *ngFor="let s of [].constructor(board.pits[index])">
+                  </span>
+                </div>
+              </button>
+            </div>
           </div>
 
           <!-- Player 0 side (bottom) -->
           <div class="row bottom-row">
-            <button
-              class="pit pit-a"
-              *ngFor="let index of [0,1,2,3,4,5]"
-              (click)="play(index)">
-              <div class="stones">
-                <span
-                  class="stone"
-                  *ngFor="let s of [].constructor(board.pits[index])">
-                </span>
-              </div>
-            </button>
+            <div class="pit-wrapper" *ngFor="let index of [0,1,2,3,4,5]">
+              <button
+                class="pit pit-a"
+                (click)="play(index)"
+                [disabled]="game.animating">
+                <div class="stones">
+                  <span
+                    class="stone"
+                    *ngFor="let s of [].constructor(board.pits[index])">
+                  </span>
+                </div>
+              </button>
+              <div class="stone-count stone-count-bottom">{{ board.pits[index] }}</div>
+            </div>
           </div>
         </div>
 

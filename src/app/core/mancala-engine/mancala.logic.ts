@@ -295,4 +295,31 @@ export function getBestMove(
   return bestMove;
 }
 
+export function getDistributionPath(
+  board: BoardState,
+  pitIndex: number
+): number[] {
+
+  let seeds = board.pits[pitIndex];
+  let index = pitIndex;
+  const path: number[] = [];
+
+  while (seeds > 0) {
+    let next = (index + 1) % 14;
+
+    // skip opponent store
+    if (next === getOpponentStore(board.currentPlayer)) {
+      index = next;
+      continue;
+    }
+
+    path.push(next);
+    index = next;
+    seeds--;
+  }
+
+  return path;
+}
+
+
 
