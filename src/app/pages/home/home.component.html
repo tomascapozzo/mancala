@@ -2,36 +2,36 @@
   <h1>Mancala</h1>
 
   <div class="cta">
-    <button class="primary" (click)="startPvp()">Player vs Player</button>
-    <button class="secondary" (click)="startAi()">Player vs AI</button>
+    <button class="primary" (click)="startPvp()">Jugador vs Jugador</button>
+    <button class="secondary" (click)="startAi()">Jugador vs AI</button>
   </div>
 
   <div class="links">
-    <button class="link" (click)="toggleHowTo()">How to play</button>
-    <button class="link" (click)="toggleRules()">Rules</button>
+    <button class="link" (click)="toggleHowTo()">Cómo jugar</button>
+    <button class="link" (click)="toggleRules()">Reglas</button>
   </div>
 
   @if (showHowTo) {
   <div class="panel">
-    <h3>How to play</h3>
+    <h3>Cómo jugar</h3>
     <p>
-      Mancala is a two-player turn-based game. On your turn, pick up all stones from one
-      of your pits and sow them one-by-one into the following pits in a counter-clockwise
-      direction. If the last stone lands in your store, you get another turn. Capture occurs
-      when the last stone lands in an empty pit on your side — capture that stone and the
-      stones opposite into your store.
+      Mancala es un juego para dos jugadores por turnos. En tu turno, recoge todas las piedras de uno
+      de tus pozos y siémbralas una por una en los pozos siguientes en sentido contrario a las agujas del reloj.
+      Si la última piedra cae en tu tienda, obtienes otro turno. La captura ocurre
+      cuando la última piedra cae en un pozo vacío de tu lado: captura esa piedra y las
+      piedras opuestas en tu tienda.
     </p>
   </div>
 }
 
   @if (showRules) {
   <div class="panel">
-    <h3>Rules</h3>
+    <h3>Reglas</h3>
     <ul>
-      <li>Each player has six pits and a store.</li>
-      <li>Players alternate turns; if your last stone lands in your store, play again.</li>
-      <li>When one side is empty, remaining stones on the opponent's side go to their store.</li>
-      <li>The player with the most stones in their store at the end wins.</li>
+      <li>Cada jugador tiene seis pozos y una tienda.</li>
+      <li>Los jugadores alternan turnos; si tu última piedra cae en tu tienda, juegas de nuevo.</li>
+      <li>Cuando un lado está vacío, las piedras restantes en el lado del oponente van a su tienda.</li>
+      <li>El jugador con más piedras en su tienda al final gana.</li>
     </ul>
   </div>
 }

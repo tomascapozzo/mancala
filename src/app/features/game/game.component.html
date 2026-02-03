@@ -2,18 +2,18 @@
   @if (!game.isGameOver()){
 
   <span>
-    Turn: Player {{ board.currentPlayer === 0 ? 'A' : 'B' }}
+    Turno: Jugador {{ board.currentPlayer === 0 ? 'A' : 'B' }}
   </span>
 }
 
   @if (game.isGameOver()){
   <span >
-    Game Over!
+    Juego Terminado!
   </span>
   @if (game.getWinner() === 'draw'){
-    <span> It's a Draw!</span>
+    <span> Es un empate!</span>
   } @else {
-    <span> Winner: Player {{ game.getWinner() === 0 ? 'A' : 'B' }}</span>
+    <span> Ganador: Jugador {{ game.getWinner() === 0 ? 'A' : 'B' }}</span>
   }
 }
 </div>
@@ -27,80 +27,77 @@
 <div class="difficulty">
   Difficulty:
   <select [(ngModel)]="aiDepth" (change)="game.setAiDepth(aiDepth)">
-    <option [value]="2">Easy</option>
-    <option [value]="4">Medium</option>
-    <option [value]="6">Hard</option>
+    <option [value]="2">Facil</option>
+    <option [value]="4">Medio</option>
+    <option [value]="6">Dificil</option>
   </select>
 </div>
 }
 
+<div class="game-container">
+  <div class="board-container">
+    <div class="board">
+      <div class="board-inner">
+        <!-- Left store (player B) -->
+        <div class="store store-b">
+          {{ board.pits[13] }}
+        </div>
 
-<div class="board">
-
-  <div class="board-inner">
-    <!-- Left store (player B) -->
-    <div class="store store-b">
-      {{ board.pits[13] }}
-    </div>
-
-    <div class="pits">
-      <!-- Player 1 side (top) -->
-      <div class="row top-row">
-        <button
-          class="pit pit-b"
-          *ngFor="let index of [12,11,10,9,8,7]"
-          (click)="play(index)">
-          <div class="stones">
-            <span
-              class="stone"
-              *ngFor="let s of [].constructor(board.pits[index])">
-            </span>
+        <div class="pits">
+          <!-- Player 1 side (top) -->
+          <div class="row top-row">
+            <button
+              class="pit pit-b"
+              *ngFor="let index of [12,11,10,9,8,7]"
+              (click)="play(index)">
+              <div class="stones">
+                <span
+                  class="stone"
+                  *ngFor="let s of [].constructor(board.pits[index])">
+                </span>
+              </div>
+            </button>
           </div>
-        </button>
-      </div>
 
-      <!-- Player 0 side (bottom) -->
-      <div class="row bottom-row">
-        <button
-          class="pit pit-a"
-          *ngFor="let index of [0,1,2,3,4,5]"
-          (click)="play(index)">
-          <div class="stones">
-            <span
-              class="stone"
-              *ngFor="let s of [].constructor(board.pits[index])">
-            </span>
+          <!-- Player 0 side (bottom) -->
+          <div class="row bottom-row">
+            <button
+              class="pit pit-a"
+              *ngFor="let index of [0,1,2,3,4,5]"
+              (click)="play(index)">
+              <div class="stones">
+                <span
+                  class="stone"
+                  *ngFor="let s of [].constructor(board.pits[index])">
+                </span>
+              </div>
+            </button>
           </div>
-        </button>
-      </div>
-    </div>
+        </div>
 
-    <!-- Right store (player A) -->
-    <div class="store store-a">
-      {{ board.pits[6] }}
+        <!-- Right store (player A) -->
+        <div class="store store-a">
+          {{ board.pits[6] }}
+        </div>
+      </div>
     </div>
   </div>
 
 </div>
+ <!--<div class="history-panel">
+    <h3>Movimientos</h3>
 
-<div class="history-panel">
-  <h3>Moves</h3>
+    <div class="history-list">
+      <div
+        class="history-item"
+        *ngFor="let move of history; let i = index">
 
-  <div class="history-list">
-    <div
-      class="history-item"
-      *ngFor="let move of history; let i = index">
+        {{ i + 1 }}.
+        Jugador {{ move.player === 0 ? 'A' : 'B' }}
+        → Pozo {{ move.pit }}
 
-      {{ i + 1 }}.
-      Player {{ move.player === 0 ? 'A' : 'B' }}
-      → Pit {{ move.pit }}
-      <span *ngIf="move.extraTurn">*</span>
-
+      </div>
     </div>
-  </div>
-</div>
-
-
-  <!-- Player 0 side (bottom) -->
+  </div>!-->
 
 

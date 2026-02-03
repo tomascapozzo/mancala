@@ -48,4 +48,18 @@ ngOnInit() {
   get history(){
     return this.game.getHistory();
   }
+
+  getTurnPairs() {
+  const pairs: { a?: number; b?: number }[] = [];
+
+  for (let i = 0; i < this.history.length; i += 2) {
+    pairs.push({
+      a: this.history[i]?.pit,
+      b: this.history[i + 1]?.pit
+    });
+  }
+
+  return pairs;
+}
+
 }
