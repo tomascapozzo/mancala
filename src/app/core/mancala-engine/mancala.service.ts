@@ -43,35 +43,24 @@ export class MancalaService {
     this.aiDepth = depth;
   }
 
-  private playAiTurn() {
+ private playAiTurn() {
 
   if (isGameOver(this.board)) return;
   if (this.board.currentPlayer !== this.AIPlayer) return;
 
-  const aiMove = getRandomMove(this.board);
+  const aiMove = getBestMove(
+    this.board,
+    this.AIPlayer,
+    this.aiDepth
+  );
+
   if (aiMove === null) return;
 
   setTimeout(() => {
-
-    const aiPlayerBefore = this.board.currentPlayer;
-
-    this.board = applyMove(this.board, aiMove);
-
-    const extraTurn =
-      this.board.currentPlayer === aiPlayerBefore;
-
-    this.moveHistory.push({
-      player: aiPlayerBefore,
-      pit: aiMove,
-      extraTurn
-    });
-
-    if (this.board.currentPlayer === this.AIPlayer) {
-      this.playAiTurn();
-    }
-
+    this.playMove(aiMove);
   }, 1500);
 }
+
 
 
   /** Returns current board */
