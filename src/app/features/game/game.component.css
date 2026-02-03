@@ -1,0 +1,193 @@
+.board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Board inner uses a three-column grid: left store | pits | right store */
+.board-inner {
+  display: grid;
+  grid-template-columns: 110px 1fr 110px;
+  grid-template-rows: auto auto;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* Center column contains the pits stacked (top row and bottom row) */
+.pits {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Rows (top / bottom) are centered in the center column */
+.row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+}
+
+/* PITS */
+.pit {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 2px solid #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pit-a {
+  background: #ffd6c9; /* light orange/red */
+}
+.pit-b {
+  background: #cfe8ff; /* light blue */
+}
+
+/* STORES */
+.store {
+  width: 90px;
+  height: 150px;
+  border-radius: 20px;
+  border: 2px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+/* Make stores span both pit rows and sit at left / right columns */
+.store-a,
+.store-b {
+  grid-row: 1 / span 2;
+}
+.store-b {
+  grid-column: 1;
+  background: #a7d2ff;
+}
+.store-a {
+  grid-column: 3;
+  background: #ffb199;
+}
+
+/* STONES */
+.stones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
+.stone {
+  width: 10px;
+  height: 10px;
+  background: #2f6fff;
+  border-radius: 50%;
+}
+
+.top-bar {
+  font-size: 22px;
+  margin-bottom: 10px;
+  color: white;
+}
+.winner {
+  font-size: 26px;
+  color: gold;
+  margin-bottom: 15px;
+}
+.controls {
+  margin-top: 15px;
+  display: flex;
+  gap: 12px;
+}
+button {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+.pit.valid {
+  outline: 3px solid yellow;
+  cursor: pointer;
+}
+/*MOVE HISTORY*/
+.history-panel {
+  width: 100%;
+  max-width: 320px;
+  margin-top: 16px;
+  background: #1e1e1e;
+  padding: 10px;
+  border-radius: 10px;
+  color: white;
+}
+
+.history-panel h3 {
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.history-list {
+  max-height: 180px;
+  overflow-y: auto;
+  font-size: 14px;
+}
+
+.history-item {
+  padding: 4px 0;
+  border-bottom: 1px solid #333;
+}
+
+
+/* Responsive tweaks */
+@media (max-width: 900px)  {
+  .top-bar {
+    font-size: 16px;
+  }
+
+  .controls {
+    gap: 6px;
+  }
+
+  .board-inner {
+    grid-template-columns: 90px 1fr 90px;
+    gap: 12px;
+  }
+
+  .store {
+    width: 70px;
+    height: 120px;
+    font-size: 18px;
+  }
+
+  .pit {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+@media (max-width: 600px) {
+  .board-inner {
+    grid-template-columns: 70px 1fr 70px;
+    gap: 10px;
+    padding: 0 8px;
+  }
+
+  .store {
+    width: 60px;
+    height: 110px;
+    font-size: 16px;
+  }
+
+  .pit {
+    width: 48px;
+    height: 48px;
+  }
+}

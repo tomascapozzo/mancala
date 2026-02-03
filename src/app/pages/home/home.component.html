@@ -1,0 +1,39 @@
+<div class="home">
+  <h1>Mancala</h1>
+
+  <div class="cta">
+    <button class="primary" (click)="startPvp()">Player vs Player</button>
+    <button class="secondary" (click)="startAi()">Player vs AI</button>
+  </div>
+
+  <div class="links">
+    <button class="link" (click)="toggleHowTo()">How to play</button>
+    <button class="link" (click)="toggleRules()">Rules</button>
+  </div>
+
+  @if (showHowTo) {
+  <div class="panel">
+    <h3>How to play</h3>
+    <p>
+      Mancala is a two-player turn-based game. On your turn, pick up all stones from one
+      of your pits and sow them one-by-one into the following pits in a counter-clockwise
+      direction. If the last stone lands in your store, you get another turn. Capture occurs
+      when the last stone lands in an empty pit on your side — capture that stone and the
+      stones opposite into your store.
+    </p>
+  </div>
+}
+
+  @if (showRules) {
+  <div class="panel">
+    <h3>Rules</h3>
+    <ul>
+      <li>Each player has six pits and a store.</li>
+      <li>Players alternate turns; if your last stone lands in your store, play again.</li>
+      <li>When one side is empty, remaining stones on the opponent's side go to their store.</li>
+      <li>The player with the most stones in their store at the end wins.</li>
+    </ul>
+  </div>
+}
+
+</div>
