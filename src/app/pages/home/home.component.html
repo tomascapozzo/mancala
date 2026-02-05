@@ -2,9 +2,19 @@
   <h1>Mancala</h1>
 
   <div class="cta">
-    <button class="primary" (click)="startPvp()">Jugador vs Jugador</button>
-    <button class="secondary" (click)="startAi()">Jugador vs AI</button>
-  </div>
+  <button class="primary" (click)="startOnline()">
+    Jugar en línea
+  </button>
+
+  <button class="secondary" (click)="startPvp()">
+    Pantalla dividida
+  </button>
+
+  <button class="secondary" (click)="startAi()">
+    Jugar contra la IA
+  </button>
+</div>
+
 
   <div class="links">
     <button class="link" (click)="toggleHowTo()">Cómo jugar</button>

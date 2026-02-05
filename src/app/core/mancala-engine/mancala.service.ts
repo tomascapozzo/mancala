@@ -31,7 +31,9 @@ export class MancalaService {
   }[] = [];
   isAnimating = false;
   animationDrops: number[] = [];
-  onBoardChanged?: (board: BoardState) => void;
+  isRemoteMove = false;
+  remoteMoveQueue: number[] = [];
+  onBoardChanged?: (board: BoardState, movePit: number) => void;
 
 
 
@@ -45,9 +47,11 @@ export class MancalaService {
   }
 
 setBoard(board: BoardState) {
-  console.log('[ENGINE] setBoard called:', board);
-  this.board = cloneBoard(board);
+  console.log('[ENGINE] setBoard called');
+  this.board = JSON.parse(JSON.stringify(board));
+  console.log('[ENGINE] setBoard new value', this.board);
 }
+
 
 
 
@@ -75,12 +79,23 @@ setBoard(board: BoardState) {
 }
 
 finishMove(originalBoard: BoardState, startPit: number) {
+  console.log('[ENGINE] finishMove, isRemote:', this.isRemoteMove);
+
   this.board = applyMove(originalBoard, startPit);
   this.isAnimating = false;
 
-  // 🔥 ADD THIS CALLBACK HOOK
-  if (this.onBoardChanged) {
-    this.onBoardChanged(this.board);
+  console.log('[ENGINE] new board', this.board);
+
+  // Only trigger onBoardChanged for LOCAL moves, not remote replays
+  if (this.onBoardChanged && !this.isRemoteMove) {
+    console.log('[ENGINE] calling onBoardChanged with pit', startPit);
+    this.onBoardChanged(this.board, startPit);
+  }
+
+  // If this was a remote move, check if there are queued moves
+  if (this.isRemoteMove) {
+    this.isRemoteMove = false;
+    this.processRemoteMoveQueue();
   }
 
   if (
@@ -90,6 +105,7 @@ finishMove(originalBoard: BoardState, startPit: number) {
     setTimeout(() => this.playAiTurn(), 400);
   }
 }
+
 
 
 animateCapture(
@@ -199,20 +215,30 @@ setTimeout(dropNext, 120);
 
   /** Play a pit index */
 playMove(pitIndex: number): void {
+  console.log('[ENGINE] playMove', pitIndex);
 
-  if (this.isAnimating) return;
-  if (isGameOver(this.board)) return;
-  if (!isValidMove(this.board, pitIndex)) return;
+  if (this.isAnimating) {
+    console.log('BLOCKED: animating');
+    return;
+  }
+
+  if (isGameOver(this.board)) {
+    console.log('BLOCKED: game over');
+    return;
+  }
+
+  if (!isValidMove(this.board, pitIndex)) {
+    console.log('BLOCKED: invalid move');
+    return;
+  }
 
   const originalBoard = cloneBoard(this.board);
   const path = getDistributionPath(originalBoard, pitIndex);
 
+  console.log('[ENGINE] path', path);
+
   this.animateMove(originalBoard, pitIndex, path);
 }
-
-
-
-
 
   isValidMove(i: number) {
     return isValidMove(this.board, i);
@@ -235,7 +261,36 @@ playMove(pitIndex: number): void {
   }
 
   playRemoteMove(startPit: number) {
-  if (this.isAnimating) return;
+  console.log('[ENGINE] playRemoteMove pit:', startPit, 'isAnimating:', this.isAnimating);
+
+  // If already animating, queue this move
+  if (this.isAnimating) {
+    console.log('[ENGINE] Animation in progress, queueing pit', startPit);
+    this.remoteMoveQueue.push(startPit);
+    return;
+  }
+
+  this.executeRemoteMove(startPit);
+}
+
+private processRemoteMoveQueue() {
+  if (this.remoteMoveQueue.length === 0) {
+    console.log('[ENGINE] Remote move queue empty');
+    return;
+  }
+
+  const nextPit = this.remoteMoveQueue.shift()!;
+  console.log('[ENGINE] Processing queued move:', nextPit, 'remaining:', this.remoteMoveQueue.length);
+
+  // Small delay to ensure board state is stable
+  setTimeout(() => {
+    this.executeRemoteMove(nextPit);
+  }, 50);
+}
+
+private executeRemoteMove(startPit: number) {
+  console.log('[ENGINE] executeRemoteMove - setting flag for pit', startPit);
+  this.isRemoteMove = true;
 
   const original = cloneBoard(this.board);
   const path = getDistributionPath(original, startPit);

@@ -12,17 +12,24 @@ export class HomeComponent {
 
   constructor(private router: Router) {}
 
-  startPvp() {
-    this.router.navigate(['/game'], {
-      queryParams: { mode: 'pvp' }
-    });
-  }
+startPvp() {
+  this.router.navigate(['/game'], {
+    queryParams: { mode: 'pvp' }
+  });
+}
 
-  startAi() {
-    this.router.navigate(['/game'], {
-      queryParams: { mode: 'ai' }
-    });
-  }
+startAi() {
+  this.router.navigate(['/game'], {
+    queryParams: { mode: 'ai' }
+  });
+}
+
+startOnline() {
+  this.router.navigate(['/lobby']);
+}
+
+
+
 
   toggleRules() {
     this.showRules = !this.showRules;

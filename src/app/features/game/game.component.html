@@ -3,6 +3,9 @@
     <h2>Waiting for opponent...</h2>
     <p>Game Code:</p>
     <h1>{{ gameId }}</h1>
+    <button class="copy-btn" (click)="copyGameId()">
+      {{ copyFeedback || 'Copy Code' }}
+    </button>
   </div>
 } @else {
 

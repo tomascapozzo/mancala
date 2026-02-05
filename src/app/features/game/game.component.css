@@ -5,6 +5,32 @@
   margin-top: 100px;
 }
 
+.copy-btn {
+  margin-top: 16px;
+  padding: 12px 24px;
+  font-size: 16px;
+  background: linear-gradient(135deg, #d4af87 0%, #c9a876 100%);
+  border: 2px solid #8b7355;
+  border-radius: 8px;
+  color: #2c1810;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: all 0.2s ease;
+  min-width: 140px;
+}
+
+.copy-btn:hover {
+  background: linear-gradient(135deg, #e0c097 0%, #d4af87 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+.copy-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 .board {
   display: flex;
   flex-direction: column;

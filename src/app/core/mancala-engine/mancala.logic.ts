@@ -85,19 +85,21 @@ export function applyMove(
     continue;
   }
 
-  // Only allow own store if this is the LAST stone
+  // Only drop in own store if it's the LAST stone
   if (next === getStoreIndex(board.currentPlayer)) {
     if (seeds === 1) {
+      // Last stone - put it in the store
       newBoard.pits[next]++;
       index = next;
       seeds--;
     } else {
+      // Not last stone - skip the store
       index = next;
     }
     continue;
   }
 
-  // Normal pit
+  // Normal pit - always drop
   newBoard.pits[next]++;
   index = next;
   seeds--;
@@ -310,6 +312,20 @@ export function getDistributionPath(
     // skip opponent store
     if (next === getOpponentStore(board.currentPlayer)) {
       index = next;
+      continue;
+    }
+
+    // Only include own store if it's the LAST stone
+    if (next === getStoreIndex(board.currentPlayer)) {
+      if (seeds === 1) {
+        // Last stone - include store in path
+        path.push(next);
+        index = next;
+        seeds--;
+      } else {
+        // Not last stone - skip store
+        index = next;
+      }
       continue;
     }
 

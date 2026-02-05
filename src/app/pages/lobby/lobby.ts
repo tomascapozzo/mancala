@@ -12,39 +12,43 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './lobby.css',
 })
 export class LobbyPageComponent {
- joinCode = '';
+  joinCode = '';
 
   constructor(
     private router: Router,
     private online: OnlineGameService,
-    private game: MancalaService
+    private game: MancalaService,
   ) {}
 
-  async createGame() {
-    const hostId = crypto.randomUUID();
-
-const result = await this.online.createGame(
-  this.game.getBoard(),
-  hostId
-);
-
-
-    const id = result.data.id;
-
-this.router.navigate(['/game'], {
-  queryParams: {
-    gameId: id,
-    playerId: hostId
+  goHome() {
+    this.router.navigate(['/home']);
   }
-});
+
+  async createGame() {
+  const hostId = crypto.randomUUID();
+
+  this.router.navigate(['/game'], {
+    queryParams: {
+      mode: 'online',
+      playerId: hostId
+    }
+  });
 }
 
-  joinGame() {
-    if (!this.joinCode) return;
 
-    this.router.navigate(['/game'], {
-      queryParams: { gameId: this.joinCode }
-    });
-  }
+joinGame() {
+  if (!this.joinCode) return;
+
+  const guestId = crypto.randomUUID();
+
+  this.router.navigate(['/game'], {
+    queryParams: {
+      mode: 'online',
+      gameId: this.joinCode,
+      playerId: guestId
+    }
+  });
+}
+
 
 }

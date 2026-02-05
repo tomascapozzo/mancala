@@ -1,20 +1,34 @@
-<div class="lobby">
 
+<div class="lobby">
   <h1>Mancala Online</h1>
 
-  <button (click)="createGame()">
-    Create Game
-  </button>
+  <div class="cta">
+    <button class="primary" (click)="createGame()">
+      Crear partida
+    </button>
 
-  <div class="join-box">
-    <input
-      [(ngModel)]="joinCode"
-      placeholder="Enter Game Code"
-    />
+    <div class="join-box">
+      <input
+        [(ngModel)]="joinCode"
+        placeholder="Código de partida"
+        class="input"
+      />
+      <button class="secondary" (click)="joinGame()">
+        Unirse
+      </button>
+    </div>
 
-    <button (click)="joinGame()">
-      Join Game
+    <button class="secondary" (click)="goHome()" style="margin-top: 8px;">
+      Volver al inicio
     </button>
   </div>
 
+  <div class="panel">
+    <h3>¿Cómo funciona?</h3>
+    <ul>
+      <li>Crea una partida y comparte el código con tu amigo.</li>
+      <li>Tu amigo ingresa el código y se une a la partida.</li>
+      <li>¡Comienza a jugar Mancala en línea!</li>
+    </ul>
+  </div>
 </div>

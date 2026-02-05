@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MancalaService } from '../../core/mancala-engine/mancala.service';
 import { BoardState } from '../../core/mancala-engine/board.model';
 import { CommonModule } from '@angular/common';
@@ -14,13 +14,14 @@ import { detectMove } from '../../core/mancala-engine/mancala.logic';
   imports: [CommonModule, RouterModule, FormsModule],
   standalone: true,
 })
-export class GameComponent implements OnInit {
+export class GameComponent implements OnInit, OnDestroy {
   aiDepth: number = 4;
   gameId!: string;
   subscription: any;
-  playerId = crypto.randomUUID();
+  playerId!: string;
   playerSide!: 0 | 1;
   waitingForOpponent = false;
+  copyFeedback: string = '';
 
   constructor(
     public game: MancalaService,
@@ -29,32 +30,63 @@ export class GameComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.route.queryParams.subscribe(async (params) => {
-      const mode = params['mode'] === 'ai' ? 'ai' : 'pvp';
-      this.game.setMode(mode);
+  this.game.reset();
 
+  this.route.queryParams.subscribe(async (params) => {
+    const mode = params['mode'];
+    this.playerId = params['playerId'];
+
+    // AI
+    if (mode === 'ai') {
+      this.game.setMode('ai');
+      this.playerSide = 0;
+      return;
+    }
+
+    // ONLINE
+    if (mode === 'online') {
       if (params['gameId']) {
-        this.gameId = params['gameId'];
-        await this.joinGame(this.gameId);
+        // 👉 GUEST
+        await this.joinGame(params['gameId']);
       } else {
+        // 👉 HOST
         await this.createAndHostGame();
       }
-    });
+      return;
+    }
 
-    this.game.onBoardChanged = (board) => {
-      if (this.gameId) {
-        this.onlineGame.updateGame(this.gameId, board);
-      }
-    };
-  }
+    // LOCAL PVP
+    this.playerSide = 0;
+    this.waitingForOpponent = false;
+  });
+
+  this.game.onBoardChanged = (board, movePit) => {
+    if (this.gameId) {
+      console.log('[GAME] Local move complete, syncing to DB:', movePit);
+      this.onlineGame.updateGame(
+        this.gameId,
+        board,
+        this.playerId,
+        movePit
+      );
+    }
+  };
+}
+
 
   get board(): BoardState {
     return this.game.getBoard();
   }
 
-async play(index: number) {
-  if (!this.canPlayPit(index)) return;
+  async play(index: number) {
+  console.log('[CLICK]', index);
 
+  if (!this.canPlayPit(index)) {
+    console.log('[BLOCKED]');
+    return;
+  }
+
+  console.log('[PLAY ACCEPTED]');
   this.game.playMove(index);
 }
 
@@ -85,81 +117,126 @@ async play(index: number) {
   }
 
   async createAndHostGame() {
-    this.waitingForOpponent = true;
+  console.log('[HOST]', this.playerId);
 
-    const result = await this.onlineGame.createGame(
-  this.game.getBoard(),
-  this.playerId
-);
+  this.playerSide = 0;
+  this.waitingForOpponent = true;
 
-    this.playerSide = 0;
+  const result = await this.onlineGame.createGame(
+    this.game.getBoard(),
+    this.playerId
+  );
 
-    this.gameId = result.data.id;
-    console.log(this.gameId);
+  this.gameId = result.data.id;
 
-    // SUBSCRIBE IMMEDIATELY
-    this.subscribeToGame();
-  }
+  this.subscribeToGame();
+}
 
-  async joinGame(id: string) {
-    this.waitingForOpponent = false;
 
-    console.log('[JOIN] Joining game:', id);
+ async joinGame(id: string) {
+  console.log('[GUEST]', this.playerId);
 
-    this.gameId = id;
+  this.playerSide = 1;
+  this.waitingForOpponent = false;
+  this.gameId = id;
 
-    // Subscribe first
-    this.subscribeToGame();
+  this.subscribeToGame();
 
-    // Register as guest
-    await this.onlineGame.assignGuest(id, this.playerId);
-    this.playerSide = 1;
+  await this.onlineGame.assignGuest(id, this.playerId);
 
-    // Fetch game
-    const result = await this.onlineGame.getGame(id);
+  const result = await this.onlineGame.getGame(id);
+  this.game.setBoard(result.data.board_state);
+}
 
-    console.log('[JOIN] Server state:', result.data.board_state);
 
-    this.game.setBoard(result.data.board_state);
-  }
+ subscribeToGame() {
+  console.log(`[SUBSCRIBE] Player ${this.playerSide} subscribing to game ${this.gameId}`);
 
-  subscribeToGame() {
-    this.subscription = this.onlineGame.listenToGame(this.gameId, (serverGame: any) => {
-      console.log('[REALTIME] Incoming update');
+  this.subscription = this.onlineGame.listenToGame(
+    this.gameId,
+    (serverGame: any) => {
 
-      // Waiting room logic
+      console.log('[REALTIME EVENT] Received:', serverGame);
+      console.log('[REALTIME] last_move_player:', serverGame.last_move_player, 'my playerId:', this.playerId);
+
+      // Update waiting status
       if (!serverGame.guest_id) {
         this.waitingForOpponent = true;
-        return;
-      }
-
-      this.waitingForOpponent = false;
-
-      const incoming = serverGame.board_state;
-      const local = this.game.getBoard();
-
-      // Ignore own updates
-      if (serverGame.last_player_id === this.playerId) {
-        return;
-      }
-
-      const move = detectMove(local, incoming);
-
-      if (move !== null) {
-        console.log('[REMOTE MOVE]', move);
-        this.game.playRemoteMove(move);
       } else {
-        // Fallback (initial sync)
-        this.game.setBoard(incoming);
+        this.waitingForOpponent = false;
       }
-    });
-  }
 
-  canPlayPit(index: number): boolean {
-    if (this.game.getBoard().currentPlayer !== this.playerSide) return false;
+      // Ignore if no actual move was made (e.g., guest joining, status updates)
+      if (!serverGame.last_move_player) {
+        console.log('[REALTIME] Ignoring - no move data (probably guest join or status update)');
+        return;
+      }
 
-    if (this.playerSide === 0) return index >= 0 && index <= 5;
+      // Ignore updates from our own moves
+      if (serverGame.last_move_player === this.playerId) {
+        console.log('[REALTIME] Ignoring - this was our own move');
+        return;
+      }
+
+      // Opponent made a move - animate it!
+      if (serverGame.last_move_pit !== null && serverGame.last_move_pit !== undefined) {
+        console.log('[REALTIME] ✓ Opponent played pit', serverGame.last_move_pit, '- replaying with animation');
+        this.game.playRemoteMove(serverGame.last_move_pit);
+      } else {
+        console.log('[REALTIME] ✓ Applying board state (no animation)');
+        this.game.setBoard(serverGame.board_state);
+      }
+    }
+  );
+}
+
+
+ canPlayPit(index: number): boolean {
+  console.log(
+    '[CAN PLAY CHECK]',
+    'side:', this.playerSide,
+    'current:', this.game.getBoard().currentPlayer,
+    'pit:', index
+  );
+
+  if (this.gameId) {
+    if (this.game.getBoard().currentPlayer !== this.playerSide)
+      return false;
+
+    if (this.playerSide === 0)
+      return index >= 0 && index <= 5;
 
     return index >= 7 && index <= 12;
   }
+
+  return this.game.isValidMove(index);
+}
+
+  copyGameId() {
+    if (!this.gameId) return;
+
+    navigator.clipboard.writeText(this.gameId).then(
+      () => {
+        this.copyFeedback = '✓ Copied!';
+        setTimeout(() => {
+          this.copyFeedback = '';
+        }, 2000);
+      },
+      (err) => {
+        console.error('Failed to copy:', err);
+        this.copyFeedback = 'Failed to copy';
+        setTimeout(() => {
+          this.copyFeedback = '';
+        }, 2000);
+      }
+    );
+  }
+
+  ngOnDestroy() {
+    if (this.subscription) {
+      console.log('[CLEANUP] Unsubscribing from realtime channel');
+      this.subscription.unsubscribe();
+    }
+  }
+
 }
