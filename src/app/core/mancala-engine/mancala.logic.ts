@@ -321,5 +321,47 @@ export function getDistributionPath(
   return path;
 }
 
+export function getCaptureInfo(
+  board: BoardState,
+  pitIndex: number
+): { from: number; to: number } | null {
+
+  const path = getDistributionPath(board, pitIndex);
+  const lastPit = path[path.length - 1];
+
+  // landed in own pit?
+  if (!isPlayersPit(lastPit, board.currentPlayer)) return null;
+
+  if (board.pits[lastPit] !== 0) return null;
+
+  const opposite = 12 - lastPit;
+
+  if (board.pits[opposite] === 0) return null;
+
+  return {
+    from: opposite,
+    to: getStoreIndex(board.currentPlayer)
+  };
+}
+
+export function detectMove(
+  before: BoardState,
+  after: BoardState
+): number | null {
+
+  for (let i = 0; i < before.pits.length; i++) {
+    if (
+      before.pits[i] > after.pits[i] &&
+      before.pits[i] > 0
+    ) {
+      return i;
+    }
+  }
+
+  return null;
+}
+
+
+
 
 

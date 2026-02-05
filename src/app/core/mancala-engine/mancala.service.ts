@@ -9,7 +9,9 @@ import {
   isValidMove,
   cloneBoard,
   getDistributionPath,
+  getCaptureInfo,
 } from './mancala.logic';
+import { SoundService } from '../sound';
 
 
 @Injectable({
@@ -29,16 +31,26 @@ export class MancalaService {
   }[] = [];
   isAnimating = false;
   animationDrops: number[] = [];
+  onBoardChanged?: (board: BoardState) => void;
 
 
 
-  constructor() {
+
+  constructor(private sound: SoundService) {
     this.reset();
   }
 
   setMode(mode: 'pvp' | 'ai') {
     this.mode = mode;
   }
+
+setBoard(board: BoardState) {
+  console.log('[ENGINE] setBoard called:', board);
+  this.board = cloneBoard(board);
+}
+
+
+
 
   setAiDepth(depth: number) {
     this.aiDepth = depth;
@@ -62,6 +74,54 @@ export class MancalaService {
   }, 1500);
 }
 
+finishMove(originalBoard: BoardState, startPit: number) {
+  this.board = applyMove(originalBoard, startPit);
+  this.isAnimating = false;
+
+  // 🔥 ADD THIS CALLBACK HOOK
+  if (this.onBoardChanged) {
+    this.onBoardChanged(this.board);
+  }
+
+  if (
+    this.mode === 'ai' &&
+    this.board.currentPlayer === this.AIPlayer
+  ) {
+    setTimeout(() => this.playAiTurn(), 400);
+  }
+}
+
+
+animateCapture(
+  fromPit: number,
+  storePit: number,
+  originalBoard: BoardState,
+  startPit: number
+) {
+
+  this.sound.playCapture();
+  const stones = this.board.pits[fromPit];
+  this.board.pits[fromPit] = 0;
+
+  let moved = 0;
+
+  const moveOne = () => {
+
+    if (moved >= stones) {
+      this.finishMove(originalBoard, startPit);
+      return;
+    }
+
+    this.board.pits[storePit]++;
+    moved++;
+
+    setTimeout(moveOne, 80);
+  };
+
+  moveOne();
+}
+
+
 animateMove(
   originalBoard: BoardState,
   startPit: number,
@@ -81,25 +141,45 @@ animateMove(
 
     if (i >= path.length) {
 
-      // 🔥 Apply rules using ORIGINAL board
-      this.board = applyMove(originalBoard, startPit);
-      this.isAnimating = false;
-
+      const lastPit = path[path.length - 1];
       if (
-        this.mode === 'ai' &&
-        this.board.currentPlayer === this.AIPlayer
-      ) {
-        setTimeout(() => this.playAiTurn(), 400);
-      }
+    lastPit === (originalBoard.currentPlayer === 0 ? 6 : 13)
+  ) {
+    this.sound.playCapture();
+  }
 
-      return;
-    }
+  const capture = getCaptureInfo(originalBoard, startPit);
+
+  if (capture) {
+    this.animateCapture(
+      capture.from,
+      capture.to,
+      originalBoard,
+      startPit
+    );
+  } else {
+    this.finishMove(originalBoard, startPit);
+  }
+
+  return;
+}
+
 
     const pit = path[i];
-    this.board.pits[pit]++;
+this.board.pits[pit]++;
 
-    i++;
-    setTimeout(dropNext, 120);
+// Only play drop sound if NOT final stone into store
+const isLast = i === path.length - 1;
+const ownStore =
+  originalBoard.currentPlayer === 0 ? 6 : 13;
+
+if (!(isLast && pit === ownStore)) {
+  this.sound.playDrop();
+}
+
+i++;
+setTimeout(dropNext, 120);
+
   };
 
   dropNext();
@@ -153,4 +233,16 @@ playMove(pitIndex: number): void {
   getHistory() {
     return this.moveHistory;
   }
+
+  playRemoteMove(startPit: number) {
+  if (this.isAnimating) return;
+
+  const original = cloneBoard(this.board);
+  const path = getDistributionPath(original, startPit);
+
+  this.animateMove(original, startPit, path);
 }
+
+}
+
+

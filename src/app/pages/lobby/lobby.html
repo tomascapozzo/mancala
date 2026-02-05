@@ -1,0 +1,20 @@
+<div class="lobby">
+
+  <h1>Mancala Online</h1>
+
+  <button (click)="createGame()">
+    Create Game
+  </button>
+
+  <div class="join-box">
+    <input
+      [(ngModel)]="joinCode"
+      placeholder="Enter Game Code"
+    />
+
+    <button (click)="joinGame()">
+      Join Game
+    </button>
+  </div>
+
+</div>
